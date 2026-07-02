@@ -1,5 +1,5 @@
 import cookieParser from "cookie-parser";
-import express, { Application, Request, Response, urlencoded } from "express";
+import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import config from "./config";
 
