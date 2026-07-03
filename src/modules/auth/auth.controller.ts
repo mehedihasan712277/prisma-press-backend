@@ -8,13 +8,28 @@ const loginUser = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
         const payload = req.body;
 
-        const result = await authService.loginUser(payload);
+        const { accessToke, refreshToke } =
+            await authService.loginUser(payload);
+
+        res.cookie("accessToke", accessToke, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "none",
+            maxAge: 1000 * 60 * 60 * 24,
+        });
+
+        res.cookie("refreshToken", refreshToke, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "none",
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+        });
 
         sendResponse(res, {
             success: true,
             statusCode: httpStatus.CREATED,
             message: "user logged in successfully",
-            data: result,
+            data: { accessToke, refreshToke },
         });
     },
 );
