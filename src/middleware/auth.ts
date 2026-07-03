@@ -58,9 +58,10 @@ export const auth = (...requiredRoles: Role[]) => {
             const user = await prisma.user.findUnique({
                 where: {
                     id,
-                    name,
-                    email,
+                    // name,
+                    // email,
                     role,
+                    // if these fields are there, it needs log in again after updating name and id
                 },
             });
 
