@@ -59,7 +59,7 @@ export const auth = (...requiredRoles: Role[]) => {
                 where: {
                     id,
                     // name,
-                    // email,
+                    email,
                     role,
                     // if these fields are there, it needs log in again after updating name and id
                 },
