@@ -30,31 +30,77 @@ const getAllPostFromDB = async () => {
 };
 
 const getPostByIdFromDB = async (postId: string) => {
+    // -----------------problem simulation why transection is needed------------------
+    // const updatedPost = await prisma.post.update({
+    //     where: {
+    //         id: postId,
+    //     },
+    //     data: {
+    //         views: {
+    //             increment: 1,
+    //         },
+    //     },
+    // });
+
+    // // throw new Error("fake error");
+
     // const result = await prisma.post.findUniqueOrThrow({
     //     where: {
     //         id: postId,
     //     },
+    //     include: {
+    //         author: {
+    //             omit: {
+    //                 password: true,
+    //             },
+    //         },
+    //         comments: true,
+    //     },
     // });
-    const updatedPost = await prisma.post.update({
-        where: {
-            id: postId,
-        },
-        data: {
-            views: {
-                increment: 1,
+
+    // return result;
+    // ----------------solving the upper problem using transection----------------------
+    const transectionResult = await prisma.$transaction(async (tx) => {
+        await tx.post.update({
+            where: {
+                id: postId,
             },
-        },
-        include: {
-            author: {
-                omit: {
-                    password: true,
+            data: {
+                views: {
+                    increment: 1,
                 },
             },
-            comments: true,
-        },
+        });
+        // throw new Error("fake error");
+        const post = await prisma.post.findUniqueOrThrow({
+            where: {
+                id: postId,
+            },
+            include: {
+                author: {
+                    omit: {
+                        password: true,
+                    },
+                },
+                comments: {
+                    where: {
+                        status: "APPROVED",
+                    },
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                },
+                _count: {
+                    select: {
+                        comments: true,
+                    },
+                },
+            },
+        });
+        return post;
     });
 
-    return updatedPost;
+    return transectionResult;
 };
 
 const updatePostIntoDB = async (
