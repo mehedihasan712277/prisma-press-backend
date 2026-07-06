@@ -102,7 +102,23 @@ const deleteComment = catchAsync(
     },
 );
 const moderateComment = catchAsync(
-    async (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {
+        const commentId = req.params.commentId;
+        if (!commentId) {
+            throw new Error("Comment id not found");
+        }
+        const payload = req.body;
+        const result = await commentService.moderateCommentInDB(
+            commentId as string,
+            payload,
+        );
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "Comment moderated successfully",
+            data: result,
+        });
+    },
 );
 
 export const commentController = {
