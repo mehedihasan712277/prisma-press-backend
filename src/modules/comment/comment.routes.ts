@@ -22,7 +22,7 @@ router.delete(
     auth(Role.ADMIN, Role.USER, Role.AUTHUR),
     commentController.deleteComment,
 );
-router.put(
+router.patch(
     "/:commentId/moderate",
     auth(Role.ADMIN),
     commentController.moderateComment,
