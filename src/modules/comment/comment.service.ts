@@ -1,5 +1,8 @@
 import { prisma } from "../../lib/prisma";
-import { ICreateCommentPayload } from "./comment.interface";
+import {
+    ICreateCommentPayload,
+    IUpdateCommentPayload,
+} from "./comment.interface";
 
 const createCommentIntoDB = async (
     payload: ICreateCommentPayload,
@@ -20,11 +23,65 @@ const createCommentIntoDB = async (
     return comment;
 };
 
-const getCommentByAuthorIdFromDB = async () => {};
+const getCommentByAuthorIdFromDB = async (authorId: string) => {
+    const comments = await prisma.comment.findMany({
+        where: {
+            authorId,
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        include: {
+            post: {
+                select: {
+                    title: true,
+                    id: true,
+                },
+            },
+        },
+    });
 
-const getCommentbyCommentIdFromDB = async () => {};
+    return comments;
+};
 
-const updateCommentInDB = async () => {};
+const getCommentbyCommentIdFromDB = async (commentId: string) => {
+    const comment = await prisma.comment.findUniqueOrThrow({
+        where: {
+            id: commentId,
+        },
+        include: {
+            post: {
+                select: {
+                    id: true,
+                    title: true,
+                    views: true,
+                },
+            },
+        },
+    });
+    return comment;
+};
+
+const updateCommentInDB = async (
+    commentId: string,
+    data: IUpdateCommentPayload,
+    authorId: string,
+) => {
+    await prisma.comment.findUniqueOrThrow({
+        where: {
+            id: commentId,
+            authorId,
+        },
+    });
+    const comment = await prisma.comment.update({
+        where: {
+            id: commentId,
+            authorId,
+        },
+        data,
+    });
+    return comment;
+};
 
 const deleteCommentFromDB = async () => {};
 

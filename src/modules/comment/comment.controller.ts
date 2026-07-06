@@ -15,27 +15,76 @@ const createComment = catchAsync(
 
         sendResponse(res, {
             success: true,
-            statusCode: httpStatus.OK,
-            message: "comment created successfully",
+            statusCode: httpStatus.CREATED,
+            message: "Comment created successfully",
             data: result,
         });
     },
 );
 
 const getCommentByAuthorId = catchAsync(
-    (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {
+        const authorId = req.params.authorId;
+        if (!authorId) {
+            throw new Error("Author is not found");
+        }
+        const result = await commentService.getCommentByAuthorIdFromDB(
+            authorId as string,
+        );
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "Comment retrived successfully",
+            data: result,
+        });
+    },
 );
 const getCommentbyCommentId = catchAsync(
-    (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {
+        const commentId = req.params.commentId;
+        if (!commentId) {
+            throw new Error("Comment not found");
+        }
+
+        const result = await commentService.getCommentbyCommentIdFromDB(
+            commentId as string,
+        );
+
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "Comment details retrived successfully",
+            data: result,
+        });
+    },
 );
 const updateComment = catchAsync(
-    (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {
+        const payload = req.body;
+        const commentId = req.params.commentId;
+        if (!commentId) {
+            throw new Error("Comment not found");
+        }
+        const authorId = req.user?.id;
+        const result = await commentService.updateCommentInDB(
+            commentId as string,
+            payload,
+            authorId as string,
+        );
+
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "Comment updated successfully",
+            data: result,
+        });
+    },
 );
 const deleteComment = catchAsync(
-    (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {},
 );
 const moderateComment = catchAsync(
-    (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {},
 );
 
 export const commentController = {
