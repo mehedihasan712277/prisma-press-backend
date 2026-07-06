@@ -81,7 +81,25 @@ const updateComment = catchAsync(
     },
 );
 const deleteComment = catchAsync(
-    async (req: Request, res: Response, next: NextFunction) => {},
+    async (req: Request, res: Response, next: NextFunction) => {
+        const commentId = req.params.commentId;
+        if (!commentId) {
+            throw new Error("Comment id not found");
+        }
+        const authorId = req.user?.id;
+
+        const result = await commentService.deleteCommentFromDB(
+            commentId as string,
+            authorId as string,
+        );
+
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "Comment deleted successfully",
+            data: result,
+        });
+    },
 );
 const moderateComment = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {},

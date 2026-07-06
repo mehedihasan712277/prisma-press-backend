@@ -83,7 +83,24 @@ const updateCommentInDB = async (
     return comment;
 };
 
-const deleteCommentFromDB = async () => {};
+const deleteCommentFromDB = async (commentId: string, authorId: string) => {
+    const comment = await prisma.comment.findUnique({
+        where: {
+            id: commentId,
+            authorId,
+        },
+    });
+    if (!comment) {
+        throw new Error("You cannot delete the comment");
+    }
+    const deletedComment = await prisma.comment.delete({
+        where: {
+            id: commentId,
+            authorId,
+        },
+    });
+    return deletedComment;
+};
 
 const moderateCommentInDB = async () => {};
 
