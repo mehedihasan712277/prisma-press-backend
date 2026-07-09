@@ -77,7 +77,7 @@ app.use(
 //     },
 // );
 
-app.use("api/subscription/webhook", express.raw({ type: "application/json" }));
+app.use("/api/subscription/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -91,7 +91,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commnetRoutes);
-app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 
 app.use(notFound);
 

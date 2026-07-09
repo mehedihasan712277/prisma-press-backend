@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
@@ -59,8 +60,7 @@ const handleWebook = async (payload: Buffer, signature: string) => {
     // Handle the event
     switch (event.type) {
         case "checkout.session.completed":
-            // const paymentObject = event.data.object;
-
+            await handleCheckOutCompleted(event.data.object);
             break;
         case "customer.subscription.updated":
             // const paymentObjects = event.data.object;
@@ -77,6 +77,51 @@ const handleWebook = async (payload: Buffer, signature: string) => {
             );
             break;
     }
+};
+
+const getPeriodEnd = (payload: Stripe.Subscription) => {
+    const currentPeriodEndsInMiliSec =
+        payload.items.data[0]?.current_period_end!;
+
+    const currentPeriodEnd = new Date(currentPeriodEndsInMiliSec * 1000);
+    return currentPeriodEnd;
+};
+
+const handleCheckOutCompleted = async (session: Stripe.Checkout.Session) => {
+    const userId = session.metadata?.userId;
+    const stripeCustomerId = session.customer as string;
+    const stripeSubscriptionId = session.subscription as string;
+
+    if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
+        throw new Error("Webhook failed");
+    }
+
+    const stripeSubscription =
+        await stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+    const currentPeriodStartsInMiliSec =
+        stripeSubscription.items.data[0]?.current_period_start;
+
+    const currentPeriodEnd = getPeriodEnd(stripeSubscription);
+
+    await prisma.subscription.upsert({
+        where: {
+            userId,
+        },
+        create: {
+            userId,
+            stripeCustomerId,
+            stripeSubscriptionId,
+            status: "ACTIVE",
+            currentPeriodEnd,
+        },
+        update: {
+            stripeCustomerId,
+            stripeSubscriptionId,
+            status: "ACTIVE",
+            currentPeriodEnd,
+        },
+    });
 };
 
 export const subscriptionServices = {
